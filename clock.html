@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Indian Railways Digital Clock</title>
+    <style>
+        @font-face {
+            font-family: 'DS-Digital';
+            src: url('DS-Digital.ttf') format('truetype');
+        }
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #000000; /* Black background */
+            font-family: 'DS-Digital', sans-serif; /* Railway-style font */
+        }
+        .clock-container {
+            position: relative;
+            text-align: center;
+            padding: 50px;
+            border-radius: 30px;
+            width: 900px; /* Increased width */
+            height: 400px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: rgba(6, 32, 109, 0.2);
+            backdrop-filter: blur(12px);
+            box-shadow: 0 0 40px red, 0 0 80px rgba(0, 0, 255, 0.6);
+            animation: fadeIn 1s ease-in-out;
+        }
+        .clock {
+            font-size: 9rem;
+            width: 100%;
+            text-align: center;
+            color: #FFFFFF; /* White font */
+        }
+        .date {
+            font-size: 3rem; /* Enlarged date */
+            position: absolute;
+            right: 20px;
+            top: 20px;
+            text-align: right;
+            color: #FFFFFF; /* White font */
+        }
+        .day {
+            font-size: 2.5rem;
+            position: absolute;
+            left: 20px;
+            bottom: 20px;
+            text-align: left;
+            color: #FFFFFF; /* White font */
+        }
+        .temperature {
+            font-size: 2rem;
+            position: absolute;
+            bottom: 50px;
+            right: 100px;
+            text-align: center;
+            font-weight: bold;
+            transition: color 0.5s ease-in-out;
+            color: #FFFFFF; /* White font */
+        }
+        .city {
+            font-size: 1.5rem;
+            position: absolute;
+            bottom: 20px;
+            right: 100px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="clock-container">
+        <div class="clock" id="clock"></div>
+        <div class="date" id="date"></div>
+        <div class="day" id="day"></div>
+        <div class="temperature" id="temperature">...</div>
+        <div class="city" id="city">Sivakasi</div>
+    </div>
+
+    <script>
+        function updateClock() {
+            const now = new Date();
+            let hours = now.getHours().toString().padStart(2, '0');
+            let minutes = now.getMinutes().toString().padStart(2, '0');
+            let seconds = now.getSeconds().toString().padStart(2, '0');
+
+            let day = now.toLocaleString('en-us', { weekday: 'long' });
+            let date = now.getDate().toString().padStart(2, '0'); 
+            let month = (now.getMonth() + 1).toString().padStart(2, '0'); 
+            let year = now.getFullYear();
+
+            document.getElementById("clock").innerText = `${hours}:${minutes}:${seconds}`;
+            document.getElementById("date").innerText = `${date}/${month}/${year}`;
+            document.getElementById("day").innerText = `${day}`;
+        }
+
+        async function fetchTemperature() {
+            try {
+                let response = await fetch("https://api.open-meteo.com/v1/forecast?latitude=9.45&longitude=77.80&current_weather=true");
+                let data = await response.json();
+                let temp = data.current_weather.temperature;
+
+                let tempElement = document.getElementById("temperature");
+
+                // Change font color based on temperature
+                if (temp < 20) {
+                    tempElement.style.color = "#00A2FF"; // Blue for cold
+                } else if (temp >= 20 && temp <= 30) {
+                    tempElement.style.color = "#FFD700"; // Yellow for moderate
+                } else {
+                    tempElement.style.color = "#FF3E3E"; // Red for hot
+                }
+
+                // Display temperature above city name
+                tempElement.innerText = `${temp}°C`;
+            } catch (error) {
+                document.getElementById("temperature").innerText = "N/A";
+            }
+        }
+
+        setInterval(updateClock, 1000);
+        updateClock();
+        fetchTemperature();
+    </script>
+</body>
+</html>
